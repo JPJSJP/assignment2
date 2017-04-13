@@ -47,18 +47,20 @@ void main(){
 
         scanf("%[^\n]s", line);
         getchar();
-
        
         char *temp = strtok(line, " ");
         
         while(andFlag == 0) {
+            redirect = 0;
+            backG = 0;
 	    char *args[128];
 	    char **next = args;            
 
 	    while (temp != NULL) {
                 *next++ = temp;
                 temp = strtok(NULL, " ");
-                 if(temp != NULL) {
+                
+                  if(temp != NULL) {
                  printf("temp : %s\n", temp);                  
 
                  if (!strcmp(temp, ">")) { 
@@ -70,11 +72,10 @@ void main(){
                   else if(!strcmp(temp, "<")) {
                       redirect = -1;
                       filename = strtok(NULL, " ");
-                      temp = strtok(NULL," ");
-                    
-                  }}
+                      temp = strtok(NULL," ");  
+                  }
+                }
                 if(temp != NULL) {
-
                if(!strcmp(temp,"&&")) {
                       andFlag = 1;
                       temp = strtok(NULL, " ");
@@ -93,6 +94,11 @@ void main(){
             for (next = args; *next != 0; next++)
                 puts(*next);
 
+            if(andFlag == 1) {andFlag = 0;}
+            else if (andFlag == 0){andFlag = 1;}
+
+
+
             
             if (!strcmp(args[0], "cd")){
                 chdir(args[1]);
@@ -109,14 +115,12 @@ void main(){
                     case 0:
             
               if(redirect == -1) {
-                int fd;
-                open(filename, O_RDONLY, 0);
+                int fd = open(filename, O_RDONLY);
                 dup2(fd, STDIN_FILENO);
                 close(fd);
              }
             else if (redirect == 1) {
-              int fd;
-              open(filename, O_WRONLY|O_TRUNC|O_CREAT, 0644);
+              int fd = open(filename, O_WRONLY|O_TRUNC|O_CREAT, 0644);
               dup2(fd, STDOUT_FILENO);
               close(fd);
               }         
