@@ -13,14 +13,13 @@ void *thread_cb(void *);
 //int rc;
 //int status;
 
-
 //int argvi = atoi(argv[2]);
 //pthread_t threads[argvi];
-
- 
+pthread_t* threads;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-
+double* x;
+double* y;
 double tmp = 0;
 double averageX = 0;
 double averageY = 0;
@@ -31,14 +30,10 @@ int lineNum = 0;
 double sumOfX = 0;
 double sumOfY = 0;
 
+int* argvii;
+
+int count = 0;
 char line[MAX_STR_SIZE];
-
-typedef struct xypack{
-double x;
-double y;
-int number;
-}xypack;
-
 
 
 int main(int argc, char* argv[]) {
@@ -46,35 +41,49 @@ int main(int argc, char* argv[]) {
 int rc;
 int status;
 
+printf("%s %s %s \n", argv[0], argv[1], argv[2]);
+
 int argvi = atoi(argv[2]);
-pthread_t threads[argvi];
+//threads = malloc()
+pthread_t threads[argvi];  //(pthread_t*) malloc( );
+
+//printf("type = %s", typeof(argvi));
+printf("price = %d\n", argvi);
+
 
 FILE *fp = fopen("input.txt", "r");
 
 
+    fgets(line, MAX_STR_SIZE, fp);
 while(!feof(fp)){
-        fgets(line, MAX_STR_SIZE , fp);
         tmp = atof(strtok(line, " "));
         sumOfX += tmp;
         tmp = atof(strtok(NULL, " "));
         sumOfY += tmp;
         lineNum++;
+    
+    fgets(line, MAX_STR_SIZE, fp);
 }
+
+printf("%d\n", lineNum);
+
 
 fclose(fp);
 
-xypack xy[lineNum];
-
 fp = fopen("input.txt", "r");
+x = (double*)malloc((lineNum * sizeof(double)));
+y = (double*)malloc(lineNum * sizeof(double));
 
 int xyi = 0;
 
+
+    fgets(line, MAX_STR_SIZE, fp);
 while (!feof(fp)){
-        fgets(line, MAX_STR_SIZE , fp);
-        xy[xyi].x = atof(strtok(line, " "));
-        xy[xyi].y = atof(strtok(line, " "));
-        xy[xyi].number = argvi;
+        x[xyi] = atof(strtok(line, " "));
+        y[xyi] = atof(strtok(line, " "));
         xyi++;
+    
+    fgets(line, MAX_STR_SIZE, fp);
 }
 
 fclose(fp);
@@ -82,38 +91,59 @@ fclose(fp);
 averageX = sumOfX / lineNum;
 averageY = sumOfY / lineNum;
 
-for(int i1 = 0; i1 < argvi; i1++) {
-pthread_create(&threads[i1], NULL, &thread_cb, (void *)xy);
+argvii = (int*)malloc(sizeof(int));
+argvii[0] = argvi;
+printf("argvii = %d\n", argvii[0]);
+
+int passNum[argvi];
+
+for(int gg = 0; gg < argvi; gg++) {
+    passNum[gg] = gg;
 }
 
+
+for(int i1 = 0; i1 < argvi; i1++) {
+    int error = pthread_create(&threads[i1], NULL, &thread_cb, (void *)&passNum[i1]);
+    printf("%d\n", error);
+}
+
+printf("create end \n");
+
 for(int i2 = 0; i2 < argvi; i2++) {
-pthread_join(threads[i2], (void **)&status);
+    printf("join\n");
+    pthread_join(threads[i2], NULL);
 //pthread_create(&threads[i], NULL, &thread_cb, (void *)i);
 }
 
+free(x);
+free(y);
 beta1 = averageY - beta1 * averageX;
 beta0 = beta1/betaTmp;
-printf("%f %f", beta0, beta1);
+printf("%f %f\n", beta0, beta1);
+free(argvii);
 
 }
 
 void *thread_cb(void *arg) {
-    double result=0.0;
-    xypack* xy;
-    xy = ((xypack*)arg); 
+
+    int number = *((int*)arg);
+    printf("number : %d\n", number);
     //printf("therad: %d, %d\n", (int)arg, getpid());
     double beta1TMP = 0;
     double betaTMP2 = 0;
-    for(int i = xy[0].number; i < lineNum; i += xy[0].number) {
-        beta1TMP += (xy[i].x - averageX) * (xy[i].y - averageY);
-        betaTMP2 += pow(xy[i].x - averageX, 2);
-    }
+    
+
     pthread_mutex_lock(&mutex);
+    for(int i = number; i < lineNum; i += argvii[0]) { 
+        beta1TMP += (x[i] - averageX) * (y[i] - averageY);
+        betaTMP2 += (x[i] - averageX) * (x[i] - averageX);
+    }
+    //pthread_mutex_lock(&mutex);
 
     beta1 += beta1TMP;
     betaTmp += betaTMP2;
   
-  pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&mutex);
 
    /*
     while (!done[(int)arg])
