@@ -88,7 +88,8 @@ int main(int argc, char* argv[]) {
     averageX = sumOfX / lineNum;
     averageY = sumOfY / lineNum;
 
-
+    printf("%lf %lf\n",sumOfX, sumOfY);
+    printf("%lf %lf\n",averageX, averageY);
 
     argvii = (int*)malloc(sizeof(int));
     argvii[0] = argvi;
@@ -113,12 +114,14 @@ int main(int argc, char* argv[]) {
     //pthread_create(&threads[i], NULL, &thread_cb, (void *)i);
     }
 
+    printf("up %lf down %lf\n", beta1, betaTmp);
+
 
     free(x);
     free(y);
     beta1 = beta1 / betaTmp;
     beta0 = averageY - (beta1 * averageX);
-    printf("Y = %lf + %lfX\n", beta0, beta1);
+    printf("Y = %.5lf + %.5lfX\n", beta0, beta1);
     free(argvii);
    // fclose(fp);
 }//
@@ -142,10 +145,12 @@ void *thread_cb(void *arg) {
         xyi++;
     }
 
-    while (!feof(ft)){
-        x[xyi] = atof(strtok(line, " "));
-        y[xyi] = atof(strtok(line, " "));
-        
+    while (!feof(ft)){        //
+         //printf("%d\n",xyi);
+        x[xyi] = atof(strtok(linee, " "));
+        y[xyi] = atof(strtok(NULL, " "));
+//        if(xyi%1000 == 1 || xyi % 1000 == 0 ) {printf("%d\n", xyi);} 
+
         for(int t = 0; t < argvii[0]; t++) {
             fgets(linee, MAX_STR_SIZE, ft);
             xyi++;
