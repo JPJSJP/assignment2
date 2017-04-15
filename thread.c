@@ -38,6 +38,12 @@ char line[MAX_STR_SIZE];
 
 int main(int argc, char* argv[]) {
 
+
+  if(argc != 3) {
+      exit(1);
+  }
+
+
 if(strcmp(argv[1],"-n" )) {
  exit(1);
 }
@@ -96,6 +102,8 @@ fclose(fp);
 averageX = sumOfX / lineNum;
 averageY = sumOfY / lineNum;
 
+printf("%lf %lf\n", averageX, averageY);
+
 argvii = (int*)malloc(sizeof(int));
 argvii[0] = argvi;
 printf("argvii = %d\n", argvii[0]);
@@ -109,7 +117,7 @@ for(int gg = 0; gg < argvi; gg++) {
 
 for(int i1 = 0; i1 < argvi; i1++) {
     int error = pthread_create(&threads[i1], NULL, &thread_cb, (void *)&passNum[i1]);
-    printf("%d\n", error);
+    //printf("%d\n", error);
 }
 
 printf("create end \n");
@@ -122,35 +130,37 @@ for(int i2 = 0; i2 < argvi; i2++) {
 
 free(x);
 free(y);
-beta1 = averageY - beta1 * averageX;
-beta0 = beta1/betaTmp;
-printf("%lf %lf\n", beta0, beta1);
+beta1 = beta1 / betaTmp;
+beta0 = averageY - (beta1 * averageX);
+printf("beta1 = %lf beta2 = %lf\n", beta1, beta0);
 free(argvii);
-
 }
 
 void *thread_cb(void *arg) {
 
     int number = *((int*)arg);
-    printf("number : %d\n", number);
+    //printf("number : %d\n", number);
     //printf("therad: %d, %d\n", (int)arg, getpid());
     double beta1TMP = 0;
-    double betaTMP2 = 0;
+    double beta1TMP2 = 0;
     
 
-    pthread_mutex_lock(&mutex);
+//    pthread_mutex_lock(&mutex);
+
     for(int i = number; i < lineNum; i += argvii[0]) { 
-        if(i%1000000 == 1 || i% 1000000 == 0) {
+        /*if(i%1000000 == 1 || i% 1000000 == 0) {
             printf("%d\n", i);
-        }
+        }*/
 
         beta1TMP += (x[i] - averageX) * (y[i] - averageY);
-        betaTMP2 += (x[i] - averageX) * (x[i] - averageX);
+        beta1TMP2 += (x[i] - averageX) * (x[i] - averageX);
     }
     //pthread_mutex_lock(&mutex);
 
+    pthread_mutex_lock(&mutex);
+
     beta1 += beta1TMP;
-    betaTmp += betaTMP2;
+    betaTmp += beta1TMP2;
   
     pthread_mutex_unlock(&mutex);
 

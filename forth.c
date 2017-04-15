@@ -49,7 +49,6 @@ void main(){
         char line[512];
         memset(line, 0, 512);
 
-
         getcwd(strBuffer, _MAX_PATH);
         printf("[%d:%d:%d]%s@%s$", ptm->tm_hour, ptm->tm_min, ptm->tm_sec, user_pw->pw_name ,strBuffer);
 
@@ -91,10 +90,10 @@ void main(){
                       break;
                   }
                  else if (!strcmp(temp,"&")) {
+                      temp = strtok(NULL, " ");
                       backG = 1;
-                      break;
                  }
-                }
+              }
             }
             
             *next = NULL;
@@ -141,7 +140,7 @@ void main(){
                     default:
                         printf("parent process %d\n", pid);
                         if(backG == 0) {
-                            wait(NULL);
+                            waitpid(pid, NULL, WUNTRACED);
                         }
                         printf("child process end\n");
                         break;

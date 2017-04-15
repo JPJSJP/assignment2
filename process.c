@@ -16,6 +16,11 @@
 
 
 int main(int argc, char* argv[]) {
+  if(argc != 3) {
+      exit(1);
+  }
+
+
   if(strcmp(argv[1], "-n")) {
       exit(1);
   }
@@ -96,7 +101,7 @@ int main(int argc, char* argv[]) {
           fgets(line, MAX_STR_SIZE, fp);
         }
         while (!feof(fp)){
-          if(xyi > 19999990)printf("%d\n",xyi);
+          //if(xyi > 19999990)printf("%d\n",xyi);
           x[xyi] = atof(strtok(line, " "));
           y[xyi] = atof(strtok(line, " "));
           xyi++;
@@ -118,11 +123,13 @@ int main(int argc, char* argv[]) {
         }
 
 
-        beta1 = averageY - beta1 * averageX;
-        beta0 = beta1/betaTmp;
+        beta1 = beta1 / betaTmp;
+        beta0 = averageY - beta1 * averageX;
+
         //printf("%lf\n", beta0);
         //printf("%lf\n", beta1);
         
+
         shm_price[2*i] += beta0;
         shm_price[2*i+1] += beta1;
 
@@ -144,9 +151,13 @@ int main(int argc, char* argv[]) {
     }
 
 
-  
+    for(int b = 0; b < argvi; b++) {
+        beta0 = shm_price[2*b];
+        beta1 = shm_price[2*b+1];
+    } 
 
-  printf("%lf %lf %lf %lf\n", shm_price[0], shm_price[1], shm_price[2], shm_price[3]);
+    printf("Y = %lf + %lfX\n", beta0, beta1);
+ 
 
 
 }
