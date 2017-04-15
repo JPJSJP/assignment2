@@ -9,7 +9,7 @@
 #include <pwd.h>
 #include <wait.h>
 #include <fcntl.h>
-
+#include <ctype.h>
 #ifndef _MAX_PATH
 #define _MAX_PATH 1024
 #endif
@@ -20,7 +20,7 @@ void main(){
     struct passwd *user_pw;
     time_t _time;
     struct tm *ptm;
-
+    
     FILE *fp;
 
     char *token = NULL;
@@ -30,38 +30,47 @@ void main(){
     char data[300];
 
     while(1){
+
         int andFlag = 0;
         int redirect = 0;
         int backG = 0;
         char *filename;
+
+        char *args[128];
+        //args[0] = '\0';
+        char **next = args;
 	// input is -1, output is 1
         user_id = getuid();
         user_pw = getpwuid(user_id);
-
+        time(&_time);
         ptm = localtime(&_time);
 
         char strBuffer[_MAX_PATH];
-        char line[1024];
+        char line[512];
+        memset(line, 0, 512);
+
+
         getcwd(strBuffer, _MAX_PATH);
         printf("[%d:%d:%d]%s@%s$", ptm->tm_hour, ptm->tm_min, ptm->tm_sec, user_pw->pw_name ,strBuffer);
 
         scanf("%[^\n]s", line);
         getchar();
-       
-        char *temp = strtok(line, " ");
         
+        char *temp = strtok(line, " ");        
+        if(temp == NULL) {continue;}
+
         while(andFlag == 0) {
             redirect = 0;
             backG = 0;
-	    char *args[128];
-	    char **next = args;            
+	    //char *args[128];
+	    //char **next = args;            
 
 	    while (temp != NULL) {
-                *next++ = temp;
-                temp = strtok(NULL, " ");
+               *next++ = temp;
+               temp = strtok(NULL, " ");
                 
-                  if(temp != NULL) {
-                 printf("temp : %s\n", temp);                  
+               if(temp != NULL) {
+                 //printf("temp : %s\n", temp);                  
 
                  if (!strcmp(temp, ">")) { 
                       redirect = 1;
@@ -89,8 +98,8 @@ void main(){
             }
             
             *next = NULL;
-	
-	    puts("Checking:");
+	    
+            puts("Checking:");
             for (next = args; *next != 0; next++)
                 puts(*next);
 
@@ -103,6 +112,9 @@ void main(){
             if (!strcmp(args[0], "cd")){
                 chdir(args[1]);
             }
+
+    
+
 
             else{
             pid_t pid;
