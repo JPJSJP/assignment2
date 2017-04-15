@@ -56,21 +56,21 @@ int main(int argc, char* argv[]) {
   pid_t wpid;
   double* x;
   double* y;
-  printf("%s %s %s \n", argv[0], argv[1], argv[2]);
+//  printf("%s %s %s \n", argv[0], argv[1], argv[2]);
 
   int argvi = atoi(argv[2]);
-  printf("price = %d\n", argvi);
+  //printf("price = %d\n", argvi);
 
-  printf("parent pid = %d\n", getpid());
+  //printf("parent pid = %d\n", getpid());
   for(int i = 0; i < argvi; i++) {
     pid = fork();
   
     switch(pid){
       case -1:
-        printf("error\n");
+      //  printf("error\n");
         break;
       case 0:
-        printf("in child process (pid = %d)\n", getpid());
+       // printf("in child process (pid = %d)\n", getpid());
         fp = fopen("input.txt", "r");
 
         for(int k = -1; k < i; k++) {
@@ -134,21 +134,17 @@ int main(int argc, char* argv[]) {
         shm_price[2*i+1] += beta1;
 
         //printf("%f %f\n", beta0, beta1);
-        printf("hey!\n");
+    //    printf("hey!\n");
         exit(EXIT_SUCCESS);
 
       default:
-        printf("parents\n");
+      //  printf("parents\n");
         //wait(NULL);
         break;
     }
   }
  
-    while ((wpid = wait(&status)) > 0)
-    {
-        printf("Exit status of %d was %d (%s)\n", (int)wpid, status,
-               (status > 0) ? "accept" : "reject");
-    }
+    while ((wpid = wait(&status)) > 0){}
 
 
     for(int b = 0; b < argvi; b++) {

@@ -29,6 +29,7 @@ double beta0 = 0;
 int lineNum = 0;
 double sumOfX = 0;
 double sumOfY = 0;
+//FILE* fp;
 
 int* argvii;
 
@@ -37,104 +38,90 @@ char line[MAX_STR_SIZE];
 
 
 int main(int argc, char* argv[]) {
+    printf("Pthread is not yet start.\n");
+
+    if(argc != 3) {
+        exit(1);
+    }
 
 
-  if(argc != 3) {
-      exit(1);
-  }
+    if(strcmp(argv[1],"-n" )) {
+        exit(1);
+    }
 
 
-if(strcmp(argv[1],"-n" )) {
- exit(1);
-}
+    int rc;
+    int status;
+
+    //printf("%s %s %s \n", argv[0], argv[1], argv[2]);
+
+    int argvi = atoi(argv[2]);
+    //threads = malloc()
+    pthread_t threads[argvi];  //(pthread_t*) malloc( );
+
+    //printf("type = %s", typeof(argvi));
+    //printf("price = %d\n", argvi);
 
 
-int rc;
-int status;
-
-printf("%s %s %s \n", argv[0], argv[1], argv[2]);
-
-int argvi = atoi(argv[2]);
-//threads = malloc()
-pthread_t threads[argvi];  //(pthread_t*) malloc( );
-
-//printf("type = %s", typeof(argvi));
-printf("price = %d\n", argvi);
-
-
-FILE *fp = fopen("input.txt", "r");
+    FILE* fp = fopen("input.txt", "r");
 
 
     fgets(line, MAX_STR_SIZE, fp);
-while(!feof(fp)){
+    while(!feof(fp)){
         tmp = atof(strtok(line, " "));
         sumOfX += tmp;
         tmp = atof(strtok(NULL, " "));
         sumOfY += tmp;
         lineNum++;
     
-    fgets(line, MAX_STR_SIZE, fp);
-}
+        fgets(line, MAX_STR_SIZE, fp);
+    }
 
-printf("%d\n", lineNum);
-
-
-fclose(fp);
-
-fp = fopen("input.txt", "r");
-x = (double*)malloc((lineNum * sizeof(double)));
-y = (double*)malloc(lineNum * sizeof(double));
-
-int xyi = 0;
+    //printf("%d\n", lineNum);
 
 
-    fgets(line, MAX_STR_SIZE, fp);
-while (!feof(fp)){
-        x[xyi] = atof(strtok(line, " "));
-        y[xyi] = atof(strtok(line, " "));
-        xyi++;
-    
-    fgets(line, MAX_STR_SIZE, fp);
-}
+    fclose(fp);
 
-fclose(fp);
+    x = (double*)malloc((lineNum * sizeof(double)));
+    y = (double*)malloc(lineNum * sizeof(double));
 
-averageX = sumOfX / lineNum;
-averageY = sumOfY / lineNum;
-
-printf("%lf %lf\n", averageX, averageY);
-
-argvii = (int*)malloc(sizeof(int));
-argvii[0] = argvi;
-printf("argvii = %d\n", argvii[0]);
-
-int passNum[argvi];
-
-for(int gg = 0; gg < argvi; gg++) {
-    passNum[gg] = gg;
-}
+    averageX = sumOfX / lineNum;
+    averageY = sumOfY / lineNum;
 
 
-for(int i1 = 0; i1 < argvi; i1++) {
-    int error = pthread_create(&threads[i1], NULL, &thread_cb, (void *)&passNum[i1]);
-    //printf("%d\n", error);
-}
 
-printf("create end \n");
+    argvii = (int*)malloc(sizeof(int));
+    argvii[0] = argvi;
 
-for(int i2 = 0; i2 < argvi; i2++) {
-    printf("join\n");
-    pthread_join(threads[i2], NULL);
-//pthread_create(&threads[i], NULL, &thread_cb, (void *)i);
-}
+    int passNum[argvi];
 
-free(x);
-free(y);
-beta1 = beta1 / betaTmp;
-beta0 = averageY - (beta1 * averageX);
-printf("beta1 = %lf beta2 = %lf\n", beta1, beta0);
-free(argvii);
-}
+    for(int gg = 0; gg < argvi; gg++) {
+      passNum[gg] = gg;
+    }
+
+    printf("Pthread starts from here.\n");
+    for(int i1 = 0; i1 < argvi; i1++) {
+        int error = pthread_create(&threads[i1], NULL, &thread_cb, (void *)&passNum[i1]);
+        //printf("%d\n", error);
+    }
+
+    //printf("create end \n");
+
+    for(int i2 = 0; i2 < argvi; i2++) {
+        //printf("join\n");
+        pthread_join(threads[i2], NULL);
+    //pthread_create(&threads[i], NULL, &thread_cb, (void *)i);
+    }
+
+
+    free(x);
+    free(y);
+    beta1 = beta1 / betaTmp;
+    beta0 = averageY - (beta1 * averageX);
+    printf("Y = %lf + %lfX\n", beta0, beta1);
+    free(argvii);
+   // fclose(fp);
+}//
 
 void *thread_cb(void *arg) {
 
@@ -143,9 +130,33 @@ void *thread_cb(void *arg) {
     //printf("therad: %d, %d\n", (int)arg, getpid());
     double beta1TMP = 0;
     double beta1TMP2 = 0;
+
+    int xyi = 0;
+
+    FILE *ft = fopen("input.txt", "r");
+
+    char linee[MAX_STR_SIZE];
+
+    for(int k = -1; k < number; k++) {
+        fgets(linee, MAX_STR_SIZE, ft);
+        xyi++;
+    }
+
+    while (!feof(ft)){
+        x[xyi] = atof(strtok(line, " "));
+        y[xyi] = atof(strtok(line, " "));
+        
+        for(int t = 0; t < argvii[0]; t++) {
+            fgets(linee, MAX_STR_SIZE, ft);
+            xyi++;
+        }
+    }
+   
+
+    fclose(ft);
     
 
-//    pthread_mutex_lock(&mutex);
+   //thread_mutex_lock(&mutex);
 
     for(int i = number; i < lineNum; i += argvii[0]) { 
         /*if(i%1000000 == 1 || i% 1000000 == 0) {
