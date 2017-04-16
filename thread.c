@@ -10,11 +10,6 @@
 
 void *thread_cb(void *);
 
-//int rc;
-//int status;
-
-//int argvi = atoi(argv[2]);
-//pthread_t threads[argvi];
 pthread_t* threads;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -29,7 +24,6 @@ double beta0 = 0;
 int lineNum = 0;
 double sumOfX = 0;
 double sumOfY = 0;
-//FILE* fp;
 
 int* argvii;
 
@@ -38,8 +32,8 @@ char line[MAX_STR_SIZE];
 
 
 int main(int argc, char* argv[]) {
-    printf("Pthread is not yet start.\n");
 
+    //argc, argv check///
     if(argc != 3) {
         exit(1);
     }
@@ -48,24 +42,18 @@ int main(int argc, char* argv[]) {
     if(strcmp(argv[1],"-n" )) {
         exit(1);
     }
-
+   //////////////////////////
 
     int rc;
     int status;
 
-    //printf("%s %s %s \n", argv[0], argv[1], argv[2]);
-
     int argvi = atoi(argv[2]);
-    //threads = malloc()
-    pthread_t threads[argvi];  //(pthread_t*) malloc( );
-
-    //printf("type = %s", typeof(argvi));
-    //printf("price = %d\n", argvi);
-
+ 
+    pthread_t threads[argvi];  
 
     FILE* fp = fopen("input.txt", "r");
 
-
+    //Until we get the average, we do no tuse pthread
     fgets(line, MAX_STR_SIZE, fp);
     while(!feof(fp)){
         tmp = atof(strtok(line, " "));
@@ -77,44 +65,42 @@ int main(int argc, char* argv[]) {
         fgets(line, MAX_STR_SIZE, fp);
     }
 
-    //printf("%d\n", lineNum);
-
-
     fclose(fp);
 
+      //ex x[0...39999999] y[0...39999999]
     x = (double*)malloc((lineNum * sizeof(double)));
     y = (double*)malloc(lineNum * sizeof(double));
 
     averageX = sumOfX / lineNum;
     averageY = sumOfY / lineNum;
 
-    printf("%lf %lf\n",sumOfX, sumOfY);
-    printf("%lf %lf\n",averageX, averageY);
-
     argvii = (int*)malloc(sizeof(int));
     argvii[0] = argvi;
 
+    //pthread arg
     int passNum[argvi];
 
     for(int gg = 0; gg < argvi; gg++) {
       passNum[gg] = gg;
-    }
+    }/////////////
+   ///////////////////////////
 
-    printf("Pthread starts from here.\n");
+
+    //
+    //pthread starts
     for(int i1 = 0; i1 < argvi; i1++) {
         int error = pthread_create(&threads[i1], NULL, &thread_cb, (void *)&passNum[i1]);
-        //printf("%d\n", error);
+   
     }
 
-    //printf("create end \n");
 
+    //pthread join
     for(int i2 = 0; i2 < argvi; i2++) {
-        //printf("join\n");
         pthread_join(threads[i2], NULL);
-    //pthread_create(&threads[i], NULL, &thread_cb, (void *)i);
+ 
     }
 
-    printf("up %lf down %lf\n", beta1, betaTmp);
+
 
 
     free(x);
@@ -123,14 +109,12 @@ int main(int argc, char* argv[]) {
     beta0 = averageY - (beta1 * averageX);
     printf("Y = %.5lf + %.5lfX\n", beta0, beta1);
     free(argvii);
-   // fclose(fp);
-}//
+}
 
 void *thread_cb(void *arg) {
 
     int number = *((int*)arg);
-    //printf("number : %d\n", number);
-    //printf("therad: %d, %d\n", (int)arg, getpid());
+   
     double beta1TMP = 0;
     double beta1TMP2 = 0;
 
@@ -146,11 +130,15 @@ void *thread_cb(void *arg) {
     }
 
     while (!feof(ft)){        //
-         //printf("%d\n",xyi);
+
+    //Write a mutex for mutual exclusion
+   
+    pthread_mutex_lock(&mutex);
+   
         x[xyi] = atof(strtok(linee, " "));
         y[xyi] = atof(strtok(NULL, " "));
-//        if(xyi%1000 == 1 || xyi % 1000 == 0 ) {printf("%d\n", xyi);} 
 
+    pthread_mutex_unlock(&mutex);
         for(int t = 0; t < argvii[0]; t++) {
             fgets(linee, MAX_STR_SIZE, ft);
             xyi++;
@@ -159,19 +147,17 @@ void *thread_cb(void *arg) {
    
 
     fclose(ft);
-    
-
-   //thread_mutex_lock(&mutex);
-
+ 
     for(int i = number; i < lineNum; i += argvii[0]) { 
-        /*if(i%1000000 == 1 || i% 1000000 == 0) {
-            printf("%d\n", i);
-        }*/
+        
 
         beta1TMP += (x[i] - averageX) * (y[i] - averageY);
         beta1TMP2 += (x[i] - averageX) * (x[i] - averageX);
     }
-    //pthread_mutex_lock(&mutex);
+    
+
+
+    //Write a mutex for mutual exclusion
 
     pthread_mutex_lock(&mutex);
 
@@ -180,15 +166,5 @@ void *thread_cb(void *arg) {
   
     pthread_mutex_unlock(&mutex);
 
-   /*
-    while (!done[(int)arg])
-    {
-       for (i=0; i < 1000000; i++)
-       {
-              result = result + (double)random()
-       }
-       printf("thread: %d, result = %e\n", (int)arg, result);
-    }
-    */
     pthread_exit((void *) 0);
 }

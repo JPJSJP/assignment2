@@ -16,6 +16,8 @@
 
 
 int main(int argc, char* argv[]) {
+
+///////////////////////
   if(argc != 3) {
       exit(1);
   }
@@ -24,6 +26,9 @@ int main(int argc, char* argv[]) {
   if(strcmp(argv[1], "-n")) {
       exit(1);
   }
+
+//checking argc, argv 
+
 
   int rc;
   int status;
@@ -39,6 +44,8 @@ int main(int argc, char* argv[]) {
   shm_set_id = shmget( (key_t)KEY_NUM2, sizeof(double) * 5, IPC_CREAT|0666);
 
   shm_price = (double*) shmat( shm_id, ( void *)0, 0);
+  //save to b1
+
   shm_set_price = (double*) shmat( shm_set_id, ( void *)0, 0);
 
   shm_set_price[0] = 0; //counter
@@ -63,25 +70,23 @@ int main(int argc, char* argv[]) {
   pid_t wpid;
   double* x;
   double* y;
-//  printf("%s %s %s \n", argv[0], argv[1], argv[2]);
 
   int argvi = atoi(argv[2]);
-  //printf("price = %d\n", argvi);
 
-  //printf("parent pid = %d\n", getpid());
   for(int i = 0; i < argvi; i++) {
     pid = fork();
   
     switch(pid){
       case -1:
-      //  printf("error\n");
-        break;
+             break;
       case 0:
-       // printf("in child process (pid = %d)\n", getpid());
+
+
+     
         fp = fopen("input.txt", "r");
 
         for(int k = -1; k < i; k++) {
-          fgets(line, MAX_STR_SIZE, fp);
+         fgets(line, MAX_STR_SIZE, fp);
         }
         while(!feof(fp)){
           tmp = atof(strtok(line, " "));
@@ -94,8 +99,12 @@ int main(int argc, char* argv[]) {
             fgets(line, MAX_STR_SIZE, fp);
           }
         }
+//save values to sumOfX and sumOfY and lineNum
+//total line  devided by process number
+//example, process1's line is 20000000 and process`s line is 20000000
 
-        fclose(fp);
+
+       fclose(fp);
 
         x = (double*) malloc(sizeof(double) * lineNum);
         y = (double*) malloc(sizeof(double) * lineNum);
@@ -104,11 +113,12 @@ int main(int argc, char* argv[]) {
 
         int xyi = 0;
 
+
+// save value to x[i] and y[i]
         for(int h = -1; h < i; h++) {
           fgets(line, MAX_STR_SIZE, fp);
         }
         while (!feof(fp)){
-          //if(xyi > 19999990)printf("%d\n",xyi);
           x[xyi] = atof(strtok(line, " "));
           y[xyi] = atof(strtok(NULL, " "));
           xyi++;
@@ -119,9 +129,14 @@ int main(int argc, char* argv[]) {
         }
 
         fclose(fp);
-     
-    //    printf("%lf %lf \n", sumOfX, sumOfY);
+////////////////
+
+
+
  
+        //self mutex     
+        //IPC lines
+        //merge value of process into shared memory
         while(shm_set_price[3] == 1) {};
         shm_set_price[3] = 1;
  
@@ -138,34 +153,26 @@ int main(int argc, char* argv[]) {
         shm_set_price[0] += 1;
 
         while(shm_set_price[0] != argvi){};
-
-  //      printf("%lf %lf\n", shm_set_price[1], shm_set_price[2]);
+        ////////////////////////////
 
         for(int u = 0; u < lineNum; u += 1) {
           beta1 += (x[u] - shm_set_price[1]) * (y[u] - shm_set_price[2]);
           betaTmp += (x[u] -  shm_set_price[1]) * (x[u] - shm_set_price[1]);
         }
 
-    //    beta1 = beta1 / betaTmp;
-    //    beta0 = averageY - beta1 * averageX;
-//        printf("%lf %lf\n", beta1, betaTmp);
-        //printf("%lf\n", beta0);
-        //printf("%lf\n", beta1);
+ 
         
+        //merge value of process into shared memory
         shm_price[2*i] = 0;
         shm_price[2*i+1] = 0;
 
         shm_price[2*i] += beta1;
         shm_price[2*i+1] += betaTmp;
-
-        //printf("%f %f\n", beta0, beta1);
-    //    printf("hey!\n");
+             //////////////////////////
         exit(EXIT_SUCCESS);
 
       default:
-      //  printf("parents\n");
-        //wait(NULL);
-        break;
+         break;
     }
   }
  
@@ -179,11 +186,9 @@ int main(int argc, char* argv[]) {
     beta1 = beta1 / betaTmp;
     beta0 = shm_set_price[2] - (beta1 * shm_set_price[1]);
     
-   // beta0 = beta0 / argvi;
-   // beta1 = beta1 / argvi;
  
 
-    printf("Y = %lf + %lfX\n", beta0, beta1);
+    printf("Y = %.5lf + %.5lfX\n", beta0, beta1);
  
 
 
